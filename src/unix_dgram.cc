@@ -57,18 +57,6 @@ Persistent<String> errno_symbol;
 watchers_t watchers;
 
 
-void SetNonBlock(int fd) {
-  int flags;
-  int r;
-
-  flags = fcntl(fd, F_GETFL);
-  assert(flags != -1);
-
-  r = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-  assert(r != -1);
-}
-
-
 void SetCloExec(int fd) {
   int flags;
   int r;
@@ -186,9 +174,6 @@ Handle<Value> Socket(const Arguments& args) {
   protocol  = args[2]->Int32Value();
   cb        = args[3];
 
-#if defined(SOCK_NONBLOCK)
-  type |= SOCK_NONBLOCK;
-#endif
 #if defined(SOCK_CLOEXEC)
   type |= SOCK_CLOEXEC;
 #endif
@@ -198,9 +183,6 @@ Handle<Value> Socket(const Arguments& args) {
     goto out;
   }
 
-  #if !defined(SOCK_NONBLOCK)
-  SetNonBlock(fd);
-#endif
 #if !defined(SOCK_CLOEXEC)
   SetCloExec(fd);
 #endif
